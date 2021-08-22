@@ -8,6 +8,12 @@ import math
 BLACK = (0,0,0)
 WHITE = (255, 255, 255)
 WINDOW_SIZE = [1000, 1000]
+rect_height = WINDOW_SIZE[1] // 4
+rect_width = WINDOW_SIZE[0] // 2
+button_height = WINDOW_SIZE[1] // 10
+button_width = WINDOW_SIZE[0] // 5 
+playing_area_height = WINDOW_SIZE[1] // 3
+playing_area_width = WINDOW_SIZE[0] // 3
 
 cards = {1:'Ace_of_Spades', 2:'Ace_of_Clubs', 3:'Ace_of_Diamonds', 4:'Ace_of_Hearts',
         5:'2_of_Spades', 6:'2_of_Clubs', 7:'2_of_Diamonds', 8: '2_of_Hearts',
@@ -25,71 +31,46 @@ cards = {1:'Ace_of_Spades', 2:'Ace_of_Clubs', 3:'Ace_of_Diamonds', 4:'Ace_of_Hea
 
 
 class Player():
-    def __init__(self, name = ""):
+    def __init__(self, rect, name = ""):
         self.deck = []
         self.play_status = True 
         self.name = name
-        self.position = ()
+        self.rect = rect  # rect parameters: top left of rectangle (x, y, width, height)
     def __str__(self):
         return self.name 
 
 class Game():
-    def __init__(self, list_of_players = [], number_of_players = 0):
-        self.list_of_players = list_of_players
+    def __init__(self, number_of_players = 0):
+        self.list_of_players = []
         self.number_of_players = number_of_players
-        self.winner = ''
+
         # create players 
         if number_of_players == 1:
-            self.player1 = Player("Player1")
-            self.player1.position = (WINDOW_SIZE[0] // 2, WINDOW_SIZE - (WINDOW_SIZE[1] // 10))
+            self.list_of_players.append(Player(pygame.Rect(WINDOW_SIZE[0] // 2 - (rect_width // 2), WINDOW_SIZE[1] - (rect_height // 2), rect_width, rect_height), "Player1")) # buttom 
         if number_of_players == 2:
-            self.player1 = Player("Player1")
-            self.player1.position = (WINDOW_SIZE[0] // 10, WINDOW_SIZE[1] // 2)
-            self.player2 = Player("Player2")
-            self.player2.position = (WINDOW_SIZE[0] - (WINDOW_SIZE[0] // 10), WINDOW_SIZE[1] // 2)
+            self.list_of_players.append(Player(pygame.Rect(WINDOW_SIZE[0] // 2 - (rect_width // 2), WINDOW_SIZE[1] - (rect_height // 2), rect_width, rect_height), "Player1")) # bottom
+            self.list_of_players.append(Player(pygame.Rect(WINDOW_SIZE[0] // 2 - (rect_width // 2), -rect_height // 2, rect_width, rect_height), "Player2")) # top
         if number_of_players == 3:
-            self.player1 = Player("Player1")
-            self.player1.position = 
-            self.player2 = Player("Player2")
-            self.player2.position = 
-            self.player3 = Player("Player3")
-            self.player3.position = 
+            self.list_of_players.append(Player(pygame.Rect(WINDOW_SIZE[0] // 2 - (rect_width // 2), WINDOW_SIZE[1] - (rect_height // 2), rect_width, rect_height), "Player1")) # bottom
+            self.list_of_players.append(Player(pygame.Rect(WINDOW_SIZE[0] // 2 - (rect_width // 2), -rect_height // 2, rect_width, rect_height), "Player2")) # top
+            self.list_of_players.append(Player(pygame.Rect(-rect_height // 2, (WINDOW_SIZE[1] // 2) - (rect_width // 2), rect_height, rect_width), "Player3")) # left
         if number_of_players == 4:
-            self.player1 = Player("Player1")
-            self.player1.position = 
-            self.player2 = Player("Player2")
-            self.player2.position = 
-            self.player3 = Player("Player3")
-            self.player3.position = 
-            self.player4 = Player("Player4")
-            self.player4.position = 
+            self.list_of_players.append(Player(pygame.Rect(WINDOW_SIZE[0] // 2 - (rect_width // 2), WINDOW_SIZE[1] - (rect_height // 2), rect_width, rect_height), "Player1")) # bottom
+            self.list_of_players.append(Player(pygame.Rect(WINDOW_SIZE[0] // 2 - (rect_width // 2), -rect_height // 2, rect_width, rect_height), "Player2")) # top
+            self.list_of_players.append(Player(pygame.Rect(-rect_height // 2, (WINDOW_SIZE[1] // 2) - (rect_width // 2), rect_height, rect_width), "Player3")) # left 
+            self.list_of_players.append(Player(pygame.Rect(WINDOW_SIZE[0] - (rect_height // 2), (WINDOW_SIZE[1] // 2) - (rect_width // 2), rect_height, rect_width), "Player4")) # right
 
     def check_winners(self):
         for player in self.list_of_players:
             if player.deck == []:
                 winner = str(player)
-                return str(player)
+                return winner 
             
               
 # DISPLAY TEXT BOX FOR PLAYER NUMBER ENTRY
 # https://stackoverflow.com/questions/46390231/how-can-i-create-a-text-input-box-with-pygame 
 
 # UPDATE LIST OF PLAYERS AND NUMBER OF PLAYERS
-
-
-
-
-players = [] 
-player1 = Player("Gerald")
-players.append(player1)
-player2 = Player("Jimmy")
-players.append(player2)
-player3 = Player("Angel")
-players.append(player3)
-player4 = Player("Lavi")
-players.append(player4)
-
-
 
 
 #display text box for "master user" to install 
@@ -120,10 +101,21 @@ def requestPlayers():
 number_of_players = requestPlayers()
 
 # start game 
-game = Game(players, number_of_players)
-rect_dimensions = WINDOW_SIZE[0] // 4
+game = Game(number_of_players)
 
-
+def drawCards(rotation, player, display):
+    # CHANGE ROTATION ADDITION VS SUBTRACTION 
+    for card in range(len(player.deck)):
+        card_image = pygame.image.load('card_images/' + player.deck[card] + '.jpg')
+        new_image = pygame.transform.rotate(card_image, rotation)
+        if rotation == 0:
+            display.blit(new_image, (player.rect.x + ((card_image.get_width() // 2) * card), player.rect.y)) 
+        elif rotation == 90:
+            display.blit(new_image, (player.rect.x, player.rect.y + ((card_image.get_width() // 2) * card)))
+        elif rotation == 180:
+            display.blit(new_image, (player.rect.x + ((card_image.get_width() // 2) * card), player.rect.y + (rect_height * 0.65)))
+        elif rotation == 270:
+            display.blit(new_image, (player.rect.x + (rect_height * 0.65), player.rect.y + ((card_image.get_width() // 2) * card)))
 
 def redrawWindow():
     pygame.display.update()
@@ -137,28 +129,84 @@ display = pygame.display.set_mode((WINDOW_SIZE[0], WINDOW_SIZE[1]))
 display.fill(BLACK)
 
 
+# player sectors
+for players in game.list_of_players:
+    rect = players.rect
+    pygame.draw.ellipse(display, WHITE, rect)
+
+# start button (x, y, width, height)
+# start text within start button 
+start_button = pygame.Rect(WINDOW_SIZE[0] // 2 - (button_width // 2), WINDOW_SIZE[1] - (WINDOW_SIZE[1] // 4), button_width, button_height)
+pygame.draw.rect(display, (255, 0, 0), start_button)
+font = pygame.font.SysFont("algerian", 32, bold=True)
+label = font.render("START", 1, BLACK)
+display.blit(label, (start_button.x + (start_button.width // 4) - (start_button.width // 20), start_button.y + (start_button.height // 3)))
+
+
+
+
+# in-play pile 
+play_pile = pygame.Rect(WINDOW_SIZE[0] // 2 - (playing_area_width // 2), WINDOW_SIZE[1] // 2 - (playing_area_width // 2), playing_area_width, playing_area_height)
+pygame.draw.rect(display, (0, 0, 255), play_pile, width = 5)
+
 def main():
     RUN = True
     while RUN: 
         # event fetching
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                RUN = False
-                break
-            elif event.type == pygame.KEYDOWN:
-                pass
+
             # get position of mouse
             pos = pygame.mouse.get_pos()
             pressed = pygame.mouse.get_pressed()
 
-            if pos[0] <= (WINDOW_SIZE[0] // 2) and pressed[0]:
-                # generate random card
-                cardNumber = random.randint(1, 52)
-                cardImage = pygame.image.load('card_images/' + cards[cardNumber] + '.jpg')
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                RUN = False
+            elif event.type == pygame.KEYDOWN:
+                pass
+            
+            # if start button is pressed down with leftmousebutton (pressed[0])
+            if pressed[0] and start_button.collidepoint(pos):
+                
+                # remove start button
+                display.blit()
 
-                # draw card to screen 
-                display.blit(cardImage, (WINDOW_SIZE[0] // 2, WINDOW_SIZE[1] // 2))
+                # VIRTUALLY: give players the cards 
+                for player in game.list_of_players:
+                    while len(player.deck) < 13:
+                        # generate random card NOTE: [*cards] returns a list of all keys in dictionary
+                        cardNumber = random.choice([*cards])
+                        
+                        # add random card to player's deck 
+                        player.deck.append(cards[cardNumber])
+
+                        # remove played card from the choices in dictionary
+                        del cards[cardNumber]
+
+                # VISUALLY: give players the cards 
+                for player in game.list_of_players:
+                    current_player = str(player)
+                    # bottom player
+                    if current_player == "Player1":
+                        drawCards(0, player, display)
+                    # top player
+                    if current_player == "Player2": 
+                        rotation = 180
+                        drawCards(rotation, player, display)
+                    # left - player3 
+                    if current_player == "Player3": 
+                        rotation = 270
+                        drawCards(rotation, player, display)
+                    # right - player4 
+                    if current_player == "Player4": 
+                        rotation = 90
+                        drawCards(rotation, player, display)
+
+
+
+
+             # fetch image
+             # 
         redrawWindow()
 
 
